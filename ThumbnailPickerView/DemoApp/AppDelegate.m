@@ -40,11 +40,17 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.viewController = [[ViewController alloc] init];
     
-    NSArray *paths = [[NSBundle mainBundle] pathsForResourcesOfType:@"jpg" inDirectory:nil];
+    NSArray* paths = [[NSArray alloc] initWithObjects:@"http://farm6.static.flickr.com/5042/5323996646_9c11e1b2f6_b.jpg", @"http://farm6.static.flickr.com/5007/5311573633_3cae940638.jpg",nil];
+    //NSArray *paths = [[NSBundle mainBundle] pathsForResourcesOfType:@"jpg" inDirectory:nil];
     NSMutableArray *images = [NSMutableArray arrayWithCapacity:paths.count];
     for (NSString *path in paths) {
-        [images addObject:[UIImage imageWithContentsOfFile:path]];
+        //[images addObject:[UIImage imageWithContentsOfFile:path]];
+        NSURL * imageURL = [NSURL URLWithString:path];
+        NSData * imageData = [NSData dataWithContentsOfURL:imageURL];
+        UIImage * image = [UIImage imageWithData:imageData];
+        [images addObject:image];
     }
+    
     self.viewController.images = images;
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
