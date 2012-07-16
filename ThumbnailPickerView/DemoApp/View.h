@@ -10,7 +10,6 @@
 
 @interface View : UIView
 
-@property (weak, nonatomic) IBOutlet UIView *controlsView;
 @property (weak, nonatomic) IBOutlet UIView *imageView;
 @property (weak, nonatomic) IBOutlet UIView *infoLabel;
 
