@@ -44,7 +44,6 @@
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UILabel *infoLabel;
 
-@property (weak, nonatomic) IBOutlet UIToolbar *toolbar;
 @property (weak, nonatomic) IBOutlet ThumbnailPickerView *thumbnailPickerView;
 @end
 
@@ -56,7 +55,7 @@
 @synthesize numberOfItemsSlider = _numberOfItemsSlider, selectedIndexSlider = _selectedIndexSlider,
             numberOfItemsLabel = _numberOfItemsLabel, selectedIndexLabel = _selectedIndexLabel,
             reloadTimeLabel = _reloadTimeLabel;
-@synthesize toolbar = _toolbar, thumbnailPickerView = _thumbnailPickerView;
+@synthesize thumbnailPickerView = _thumbnailPickerView;
 
 #pragma mark - View lifecycle
 
