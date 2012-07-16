@@ -53,4 +53,5 @@
 @property (nonatomic, assign) NSUInteger selectedIndex;
 @property (nonatomic, weak) IBOutlet id<ThumbnailPickerViewDataSource> dataSource;
 @property (nonatomic, weak) IBOutlet id<ThumbnailPickerViewDelegate> delegate;
+@property (nonatomic, assign) bool isVertical;
 @end

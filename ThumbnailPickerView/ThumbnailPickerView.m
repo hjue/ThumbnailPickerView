@@ -59,6 +59,8 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
 @synthesize contentView = _contentView, bigThumbnailImageView = _bigThumbnailImageView;
 @synthesize reusableThumbnailImageViews = _reusableThumbnailImageViews;
 
+@synthesize isVertical = _isVertical;
+
 - (UIImageView *)_createThumbnailImageViewWithSize:(CGSize)size
 {
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size.width, size.height)];
@@ -163,76 +165,157 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
     if (totalItemsCount == 0)
         return;
     
-    CGFloat contentsWidth = totalItemsCount * kThumbnailSize.width + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
-    if (contentsWidth > self.bounds.size.width) {
-        self.visibleThumbnailsCount = floor((self.bounds.size.width+kThumbnailSpacing)/(kThumbnailSize.width+kThumbnailSpacing)); // i = (c+s)/(w+s)
-        NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
-        contentsWidth = self.visibleThumbnailsCount * kThumbnailSize.width + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
-    } else {
-        self.visibleThumbnailsCount = totalItemsCount;
-    }
-    
-    NSMutableArray *indices = [NSMutableArray arrayWithCapacity:self.visibleThumbnailsCount];
-    if (self.visibleThumbnailsCount < totalItemsCount) {
-        for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
-            [indices addObject:[NSNumber numberWithUnsignedInteger:(float)i/(self.visibleThumbnailsCount-1)*(totalItemsCount-1)]];
+    if (self.isVertical)
+    {
+        // calculate number of thumbnail visible
+        CGFloat contentsHeight = totalItemsCount * kThumbnailSize.height + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
+        if (contentsHeight > self.bounds.size.height) {
+            self.visibleThumbnailsCount = floor((self.bounds.size.height+kThumbnailSpacing)/(kThumbnailSize.height+kThumbnailSpacing)); // i = (c+s)/(w+s)
+            NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
+            contentsHeight = self.visibleThumbnailsCount * kThumbnailSize.height + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
+        } else {
+            self.visibleThumbnailsCount = totalItemsCount;
         }
-    } else {
-        for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
-            [indices addObject:[NSNumber numberWithUnsignedInteger:i]];
-        }
-    }
-    
-    if (!self.contentView) {
-        self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, contentsWidth, kThumbnailSize.height)];
-        self.contentView.userInteractionEnabled = NO;
-        self.contentView.backgroundColor = [UIColor clearColor];
-        [self addSubview:self.contentView];
-    } else {
         
-        [self.contentView.subviews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if (![indices containsObject:[NSNumber numberWithInt:[obj tag]-kTagOffset]]) {
-                [self _prepareImageViewForReuse:obj];
+        NSMutableArray *indices = [NSMutableArray arrayWithCapacity:self.visibleThumbnailsCount];
+        if (self.visibleThumbnailsCount < totalItemsCount) {
+            for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
+                [indices addObject:[NSNumber numberWithUnsignedInteger:(float)i/(self.visibleThumbnailsCount-1)*(totalItemsCount-1)]];
             }
-        }];
-        
-        CGRect contentViewFrame = self.contentView.frame;
-        contentViewFrame.size.width = contentsWidth;
-        self.contentView.frame = contentViewFrame;
-    }
-    
-    UIImageView *imageView = nil;
-    CGRect imageViewFrame;
-    NSUInteger index;
-    NSInteger tag;
-    
-    for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
-        index = [[indices objectAtIndex:i] unsignedIntegerValue];
-        tag = index + kTagOffset;
-        
-        imageView = (UIImageView *)[self.contentView viewWithTag:tag];
-        if (!imageView) {
-            imageView = [self _dequeueReusableImageView];
-            if (!imageView) {
-                imageView = [self _createThumbnailImageViewWithSize:kThumbnailSize];
+        } else {
+            for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
+                [indices addObject:[NSNumber numberWithUnsignedInteger:i]];
             }
-            imageView.tag = tag;
         }
         
-        imageViewFrame = imageView.frame;
-        imageViewFrame.origin.x = i * (kThumbnailSize.width + kThumbnailSpacing);
-        imageView.frame = imageViewFrame;
-        
-        [self.contentView addSubview:imageView];
+        // set up the content view size
+        if (!self.contentView) {
+            self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kThumbnailSize.width, contentsHeight)];
+            self.contentView.userInteractionEnabled = NO;
+            self.contentView.backgroundColor = [UIColor clearColor];
+            [self addSubview:self.contentView];
+        } else {
+            
+            [self.contentView.subviews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                if (![indices containsObject:[NSNumber numberWithInt:[obj tag]-kTagOffset]]) {
+                    [self _prepareImageViewForReuse:obj];
+                }
+            }];
+            
+            CGRect contentViewFrame = self.contentView.frame;
+            contentViewFrame.size.height = contentsHeight;
+            self.contentView.frame = contentViewFrame;
+        }
 
-        dispatch_queue_t imageLoadingQueue = dispatch_queue_create("image loading queue", NULL);
-        dispatch_async(imageLoadingQueue, ^{
-            UIImage *image = [self.dataSource thumbnailPickerView:self imageAtIndex:index];
-            dispatch_async(dispatch_get_main_queue(),^{
-                imageView.image = image;
+        // add thumbnail
+        UIImageView *imageView = nil;
+        CGRect imageViewFrame;
+        NSUInteger index;
+        NSInteger tag;
+        
+        for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
+            index = [[indices objectAtIndex:i] unsignedIntegerValue];
+            tag = index + kTagOffset;
+            
+            imageView = (UIImageView *)[self.contentView viewWithTag:tag];
+            if (!imageView) {
+                imageView = [self _dequeueReusableImageView];
+                if (!imageView) {
+                    imageView = [self _createThumbnailImageViewWithSize:kThumbnailSize];
+                }
+                imageView.tag = tag;
+            }
+            
+            // set position
+            imageViewFrame = imageView.frame;
+            imageViewFrame.origin.y = i * (kThumbnailSize.height + kThumbnailSpacing);
+            imageView.frame = imageViewFrame;
+            
+            [self.contentView addSubview:imageView];
+            
+            dispatch_queue_t imageLoadingQueue = dispatch_queue_create("image loading queue", NULL);
+            dispatch_async(imageLoadingQueue, ^{
+                UIImage *image = [self.dataSource thumbnailPickerView:self imageAtIndex:index];
+                dispatch_async(dispatch_get_main_queue(),^{
+                    imageView.image = image;
+                });
             });
-        });
-        dispatch_release(imageLoadingQueue);
+            dispatch_release(imageLoadingQueue);
+        }
+    }
+    else { // horizontal
+    
+        CGFloat contentsWidth = totalItemsCount * kThumbnailSize.width + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
+        if (contentsWidth > self.bounds.size.width) {
+            self.visibleThumbnailsCount = floor((self.bounds.size.width+kThumbnailSpacing)/(kThumbnailSize.width+kThumbnailSpacing)); // i = (c+s)/(w+s)
+            NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
+            contentsWidth = self.visibleThumbnailsCount * kThumbnailSize.width + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
+        } else {
+            self.visibleThumbnailsCount = totalItemsCount;
+        }
+        
+        NSMutableArray *indices = [NSMutableArray arrayWithCapacity:self.visibleThumbnailsCount];
+        if (self.visibleThumbnailsCount < totalItemsCount) {
+            for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
+                [indices addObject:[NSNumber numberWithUnsignedInteger:(float)i/(self.visibleThumbnailsCount-1)*(totalItemsCount-1)]];
+            }
+        } else {
+            for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
+                [indices addObject:[NSNumber numberWithUnsignedInteger:i]];
+            }
+        }
+        
+        if (!self.contentView) {
+            self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, contentsWidth, kThumbnailSize.height)];
+            self.contentView.userInteractionEnabled = NO;
+            self.contentView.backgroundColor = [UIColor clearColor];
+            [self addSubview:self.contentView];
+        } else {
+            
+            [self.contentView.subviews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                if (![indices containsObject:[NSNumber numberWithInt:[obj tag]-kTagOffset]]) {
+                    [self _prepareImageViewForReuse:obj];
+                }
+            }];
+            
+            CGRect contentViewFrame = self.contentView.frame;
+            contentViewFrame.size.width = contentsWidth;
+            self.contentView.frame = contentViewFrame;
+        }
+        
+        UIImageView *imageView = nil;
+        CGRect imageViewFrame;
+        NSUInteger index;
+        NSInteger tag;
+        
+        for (NSUInteger i = 0; i < self.visibleThumbnailsCount; i++) {
+            index = [[indices objectAtIndex:i] unsignedIntegerValue];
+            tag = index + kTagOffset;
+            
+            imageView = (UIImageView *)[self.contentView viewWithTag:tag];
+            if (!imageView) {
+                imageView = [self _dequeueReusableImageView];
+                if (!imageView) {
+                    imageView = [self _createThumbnailImageViewWithSize:kThumbnailSize];
+                }
+                imageView.tag = tag;
+            }
+            
+            imageViewFrame = imageView.frame;
+            imageViewFrame.origin.x = i * (kThumbnailSize.width + kThumbnailSpacing);
+            imageView.frame = imageViewFrame;
+            
+            [self.contentView addSubview:imageView];
+
+            dispatch_queue_t imageLoadingQueue = dispatch_queue_create("image loading queue", NULL);
+            dispatch_async(imageLoadingQueue, ^{
+                UIImage *image = [self.dataSource thumbnailPickerView:self imageAtIndex:index];
+                dispatch_async(dispatch_get_main_queue(),^{
+                    imageView.image = image;
+                });
+            });
+            dispatch_release(imageLoadingQueue);
+        }
     }
     [self _updateBigThumbnailPositionVerbose:NO animated:NO];
 }
@@ -274,10 +357,21 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
     CGPoint pos = [touch locationInView:self.contentView];
     NSUInteger totalItemsCount = [self.dataSource numberOfImagesForThumbnailPickerView:self];
     NSInteger idx;
-    if (fineGrained)
-        idx = floor(pos.x / self.contentView.frame.size.width * (totalItemsCount-1));
-    else
-        idx = floor(floor(pos.x/(kThumbnailSize.width+kThumbnailSpacing)) / (self.visibleThumbnailsCount-1) * (totalItemsCount-1));
+    
+    if (self.isVertical) // vertical
+    {
+        if (fineGrained)
+            idx = floor(pos.y / self.contentView.frame.size.height * (totalItemsCount-1));
+        else
+            idx = floor(floor(pos.y/(kThumbnailSize.height+kThumbnailSpacing)) / (self.visibleThumbnailsCount-1) * (totalItemsCount-1));
+    }
+    else // horizontal
+    {
+        if (fineGrained)
+            idx = floor(pos.x / self.contentView.frame.size.width * (totalItemsCount-1));
+        else
+            idx = floor(floor(pos.x/(kThumbnailSize.width+kThumbnailSpacing)) / (self.visibleThumbnailsCount-1) * (totalItemsCount-1));
+    }
 
     idx = MAX(0, idx);
     idx = MIN(totalItemsCount-1, idx);
@@ -333,9 +427,17 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
     [self reloadData];
     self.contentView.center = [self convertPoint:self.center fromView:self.superview];
     if (self.bigThumbnailImageView) {
-        // center big thumbnail view vertically
         CGRect frame = self.bigThumbnailImageView.frame;
-        frame.origin.y = (self.bounds.size.height - frame.size.height) / 2;
+        if (self.isVertical)
+        {
+            // center big thumbnail view horizontally
+            frame.origin.x = (self.bounds.size.width - frame.size.width) * 0.5f;
+        }
+        else
+        {
+            // center big thumbnail view vertically
+            frame.origin.y = (self.bounds.size.height - frame.size.height) * 0.5f;
+        }
         self.bigThumbnailImageView.frame = frame;
 
         UIView *subview = [self.contentView viewWithTag:self.bigThumbnailImageView.tag-kBigThumbnailTagOffset+kTagOffset];

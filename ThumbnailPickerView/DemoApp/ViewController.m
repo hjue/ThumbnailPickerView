@@ -51,6 +51,8 @@
 - (void)viewDidLoad
 {
     _numberOfItems = self.images.count;
+    
+    self.thumbnailPickerView.isVertical = true;
 
     self.infoLabel.text = [NSString string];
 }

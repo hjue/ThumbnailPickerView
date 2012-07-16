@@ -42,7 +42,7 @@
 						<string key="NSFrameSize">{320, 460}</string>
 						<reference key="NSSuperview" ref="774585933"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
+						<reference key="NSNextKeyView" ref="347708628"/>
 						<int key="IBUIContentMode">1</int>
 						<bool key="IBUIUserInteractionEnabled">NO</bool>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
@@ -53,7 +53,7 @@
 						<string key="NSFrame">{{112, 10}, {96, 20}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="667631667"/>
+						<reference key="NSNextKeyView" ref="991554995"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClipsSubviews">YES</bool>
 						<int key="IBUIContentMode">7</int>
@@ -82,10 +82,10 @@
 							<int key="NSfFlags">16</int>
 						</object>
 					</object>
-					<object class="IBUIView" id="96085362">
+					<object class="IBUIView" id="991554995">
 						<reference key="NSNextResponder" ref="774585933"/>
 						<int key="NSvFlags">274</int>
-						<string key="NSFrame">{{0, 427}, {320, 33}}</string>
+						<string key="NSFrame">{{281, 0}, {39, 460}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
 						<reference key="NSWindow"/>
 						<object class="NSColor" key="IBUIBackgroundColor" id="487574684">
@@ -98,7 +98,7 @@
 				<string key="NSFrame">{{0, 20}, {320, 460}}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
-				<reference key="NSNextKeyView"/>
+				<reference key="NSNextKeyView" ref="667631667"/>
 				<object class="NSColor" key="IBUIBackgroundColor">
 					<int key="NSColorSpace">10</int>
 					<object class="NSImage" key="NSImage">
@@ -4525,7 +4525,7 @@ AAgAAAAIAAIACAACAAAAAgAAAAEAAQABAAE</bytes>
 					<object class="IBCocoaTouchOutletConnection" key="connection">
 						<string key="label">thumbnailPickerView</string>
 						<reference key="source" ref="372490531"/>
-						<reference key="destination" ref="96085362"/>
+						<reference key="destination" ref="991554995"/>
 					</object>
 					<int key="connectionID">63</int>
 				</object>
@@ -4548,7 +4548,7 @@ AAgAAAAIAAIACAACAAAAAgAAAAEAAQABAAE</bytes>
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchOutletConnection" key="connection">
 						<string key="label">delegate</string>
-						<reference key="source" ref="96085362"/>
+						<reference key="source" ref="991554995"/>
 						<reference key="destination" ref="372490531"/>
 					</object>
 					<int key="connectionID">61</int>
@@ -4556,7 +4556,7 @@ AAgAAAAIAAIACAACAAAAAgAAAAEAAQABAAE</bytes>
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchOutletConnection" key="connection">
 						<string key="label">dataSource</string>
-						<reference key="source" ref="96085362"/>
+						<reference key="source" ref="991554995"/>
 						<reference key="destination" ref="372490531"/>
 					</object>
 					<int key="connectionID">62</int>
@@ -4586,8 +4586,8 @@ AAgAAAAIAAIACAACAAAAAgAAAAEAAQABAAE</bytes>
 						<reference key="object" ref="774585933"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="667631667"/>
-							<reference ref="96085362"/>
 							<reference ref="347708628"/>
+							<reference ref="991554995"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -4603,7 +4603,7 @@ AAgAAAAIAAIACAACAAAAAgAAAAEAAQABAAE</bytes>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">60</int>
-						<reference key="object" ref="96085362"/>
+						<reference key="object" ref="991554995"/>
 						<reference key="parent" ref="774585933"/>
 					</object>
 				</array>
@@ -4654,15 +4654,10 @@ AAgAAAAIAAIACAACAAAAAgAAAAEAAQABAAE</bytes>
 					<string key="className">View</string>
 					<string key="superclassName">UIView</string>
 					<dictionary class="NSMutableDictionary" key="outlets">
-						<string key="controlsView">UIView</string>
 						<string key="imageView">UIView</string>
 						<string key="infoLabel">UIView</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<object class="IBToOneOutletInfo" key="controlsView">
-							<string key="name">controlsView</string>
-							<string key="candidateClassName">UIView</string>
-						</object>
 						<object class="IBToOneOutletInfo" key="imageView">
 							<string key="name">imageView</string>
 							<string key="candidateClassName">UIView</string>
