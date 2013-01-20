@@ -52,8 +52,18 @@
 {
     _numberOfItems = self.images.count;
     
-    self.thumbnailPickerView.isVertical = true;
+    self.thumbnailPickerView.isVertical = YES;
+    CGRect frame;
+    if (self.thumbnailPickerView.isVertical)
+    {
+        frame = CGRectMake(320-60, 0, 60, 460);
+    }else
+    {
+        frame = CGRectMake(0, 400, 320, 60);
+    }
 
+    self.thumbnailPickerView.frame = frame;
+    self.thumbnailPickerView.thumbnailSize = CGSizeMake(60,40);
     self.infoLabel.text = [NSString string];
 }
 

@@ -54,4 +54,6 @@
 @property (nonatomic, weak) IBOutlet id<ThumbnailPickerViewDataSource> dataSource;
 @property (nonatomic, weak) IBOutlet id<ThumbnailPickerViewDelegate> delegate;
 @property (nonatomic, assign) bool isVertical;
+@property (nonatomic,assign) CGSize thumbnailSize;
+@property (nonatomic,assign) CGSize bigThumbnailSize;
 @end

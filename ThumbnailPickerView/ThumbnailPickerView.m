@@ -26,6 +26,10 @@
 //  THE SOFTWARE.
 //
 
+#warning TODO: 可以选择关闭大图
+#warning TODO: ThumbnailView增加ScrollBar
+
+
 #import "ThumbnailPickerView.h"
 
 static const CGSize kThumbnailSize        = {16, 13};
@@ -50,7 +54,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
 @property (nonatomic, weak) UIImageView *bigThumbnailImageView;
 @property (nonatomic, strong, readonly) NSMutableSet *reusableThumbnailImageViews;
 @end
-
+ 
 @implementation ThumbnailPickerView
 
 @synthesize selectedIndex = _selectedIndex;
@@ -58,11 +62,13 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
 @synthesize visibleThumbnailsCount = _visibleThumbnailsCount;
 @synthesize contentView = _contentView, bigThumbnailImageView = _bigThumbnailImageView;
 @synthesize reusableThumbnailImageViews = _reusableThumbnailImageViews;
-
 @synthesize isVertical = _isVertical;
+@synthesize thumbnailSize = _thumbnailSize;
+@synthesize bigThumbnailSize = _bigThumbnailSize;
 
 - (UIImageView *)_createThumbnailImageViewWithSize:(CGSize)size
 {
+
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size.width, size.height)];
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.backgroundColor = [UIColor grayColor];
@@ -168,11 +174,11 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
     if (self.isVertical)
     {
         // calculate number of thumbnail visible
-        CGFloat contentsHeight = totalItemsCount * kThumbnailSize.height + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
+        CGFloat contentsHeight = totalItemsCount * self.thumbnailSize.height + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
         if (contentsHeight > self.bounds.size.height) {
-            self.visibleThumbnailsCount = floor((self.bounds.size.height+kThumbnailSpacing)/(kThumbnailSize.height+kThumbnailSpacing)); // i = (c+s)/(w+s)
+            self.visibleThumbnailsCount = floor((self.bounds.size.height+kThumbnailSpacing)/(self.thumbnailSize.height+kThumbnailSpacing)); // i = (c+s)/(w+s)
             NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
-            contentsHeight = self.visibleThumbnailsCount * kThumbnailSize.height + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
+            contentsHeight = self.visibleThumbnailsCount * self.thumbnailSize.height + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
         } else {
             self.visibleThumbnailsCount = totalItemsCount;
         }
@@ -190,7 +196,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
         
         // set up the content view size
         if (!self.contentView) {
-            self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kThumbnailSize.width, contentsHeight)];
+            self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.thumbnailSize.width, contentsHeight)];
             self.contentView.userInteractionEnabled = NO;
             self.contentView.backgroundColor = [UIColor clearColor];
             [self addSubview:self.contentView];
@@ -221,18 +227,19 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             if (!imageView) {
                 imageView = [self _dequeueReusableImageView];
                 if (!imageView) {
-                    imageView = [self _createThumbnailImageViewWithSize:kThumbnailSize];
+                    imageView = [self _createThumbnailImageViewWithSize:self.thumbnailSize];
                 }
                 imageView.tag = tag;
             }
             
             // set position
             imageViewFrame = imageView.frame;
-            imageViewFrame.origin.y = i * (kThumbnailSize.height + kThumbnailSpacing);
+            imageViewFrame.origin.y = i * (self.thumbnailSize.height + kThumbnailSpacing);
             imageView.frame = imageViewFrame;
             
             [self.contentView addSubview:imageView];
             
+            //这里采用异步加载image
             dispatch_queue_t imageLoadingQueue = dispatch_queue_create("image loading queue", NULL);
             dispatch_async(imageLoadingQueue, ^{
                 UIImage *image = [self.dataSource thumbnailPickerView:self imageAtIndex:index];
@@ -245,11 +252,11 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
     }
     else { // horizontal
     
-        CGFloat contentsWidth = totalItemsCount * kThumbnailSize.width + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
+        CGFloat contentsWidth = totalItemsCount * self.thumbnailSize.width + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
         if (contentsWidth > self.bounds.size.width) {
-            self.visibleThumbnailsCount = floor((self.bounds.size.width+kThumbnailSpacing)/(kThumbnailSize.width+kThumbnailSpacing)); // i = (c+s)/(w+s)
+            self.visibleThumbnailsCount = floor((self.bounds.size.width+kThumbnailSpacing)/(self.thumbnailSize.width+kThumbnailSpacing)); // i = (c+s)/(w+s)
             NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
-            contentsWidth = self.visibleThumbnailsCount * kThumbnailSize.width + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
+            contentsWidth = self.visibleThumbnailsCount * self.thumbnailSize.width + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
         } else {
             self.visibleThumbnailsCount = totalItemsCount;
         }
@@ -266,7 +273,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
         }
         
         if (!self.contentView) {
-            self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, contentsWidth, kThumbnailSize.height)];
+            self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, contentsWidth, self.thumbnailSize.height)];
             self.contentView.userInteractionEnabled = NO;
             self.contentView.backgroundColor = [UIColor clearColor];
             [self addSubview:self.contentView];
@@ -296,17 +303,18 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             if (!imageView) {
                 imageView = [self _dequeueReusableImageView];
                 if (!imageView) {
-                    imageView = [self _createThumbnailImageViewWithSize:kThumbnailSize];
+                    imageView = [self _createThumbnailImageViewWithSize:self.thumbnailSize];
                 }
                 imageView.tag = tag;
             }
             
             imageViewFrame = imageView.frame;
-            imageViewFrame.origin.x = i * (kThumbnailSize.width + kThumbnailSpacing);
+            imageViewFrame.origin.x = i * (self.thumbnailSize.width + kThumbnailSpacing);
             imageView.frame = imageViewFrame;
             
             [self.contentView addSubview:imageView];
 
+            //这里采用异步加载image
             dispatch_queue_t imageLoadingQueue = dispatch_queue_create("image loading queue", NULL);
             dispatch_async(imageLoadingQueue, ^{
                 UIImage *image = [self.dataSource thumbnailPickerView:self imageAtIndex:index];
@@ -363,14 +371,14 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
         if (fineGrained)
             idx = floor(pos.y / self.contentView.frame.size.height * (totalItemsCount-1));
         else
-            idx = floor(floor(pos.y/(kThumbnailSize.height+kThumbnailSpacing)) / (self.visibleThumbnailsCount-1) * (totalItemsCount-1));
+            idx = floor(floor(pos.y/(self.thumbnailSize.height+kThumbnailSpacing)) / (self.visibleThumbnailsCount-1) * (totalItemsCount-1));
     }
     else // horizontal
     {
         if (fineGrained)
             idx = floor(pos.x / self.contentView.frame.size.width * (totalItemsCount-1));
         else
-            idx = floor(floor(pos.x/(kThumbnailSize.width+kThumbnailSpacing)) / (self.visibleThumbnailsCount-1) * (totalItemsCount-1));
+            idx = floor(floor(pos.x/(self.thumbnailSize.width+kThumbnailSpacing)) / (self.visibleThumbnailsCount-1) * (totalItemsCount-1));
     }
 
     idx = MAX(0, idx);
@@ -392,7 +400,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
         }
         
         if (!self.bigThumbnailImageView) {
-            UIImageView *bigThumb = [self _createThumbnailImageViewWithSize:kBigThumbnailSize];
+            UIImageView *bigThumb = [self _createThumbnailImageViewWithSize:self.bigThumbnailSize];
             self.bigThumbnailImageView = bigThumb;
             [self addSubview:self.bigThumbnailImageView];
         }
@@ -425,7 +433,8 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
 - (void)layoutSubviews
 {
     [self reloadData];
-    self.contentView.center = [self convertPoint:self.center fromView:self.superview];
+//    self.contentView.center = [self convertPoint:self.center fromView:self.superview];
+    self.contentView.center = CGPointMake(self.bounds.size.width/2,self.bounds.size.height/2);
     if (self.bigThumbnailImageView) {
         CGRect frame = self.bigThumbnailImageView.frame;
         if (self.isVertical)
@@ -446,4 +455,28 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
     }
 }
 
+- (CGSize )thumbnailSize
+{
+    if (_thumbnailSize.width==0) {
+        return kThumbnailSize;
+    }else
+    {
+        return _thumbnailSize;
+    }
+}
+
+- (CGSize) bigThumbnailSize
+{
+    if (_bigThumbnailSize.width ==0 )
+        _bigThumbnailSize = kBigThumbnailSize;
+
+    if (_bigThumbnailSize.width <= _thumbnailSize.width || _bigThumbnailSize.height <= _thumbnailSize.height )
+    {
+        return _thumbnailSize;
+    }else
+    {
+        return _bigThumbnailSize;        
+    }
+
+}
 @end
