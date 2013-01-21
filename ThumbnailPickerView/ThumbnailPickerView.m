@@ -26,7 +26,6 @@
 //  THE SOFTWARE.
 //
 
-#warning TODO: 可以选择关闭大图
 #warning TODO: ThumbnailView增加ScrollBar
 
 
@@ -177,7 +176,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
         CGFloat contentsHeight = totalItemsCount * self.thumbnailSize.height + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
         if (contentsHeight > self.bounds.size.height) {
             self.visibleThumbnailsCount = floor((self.bounds.size.height+kThumbnailSpacing)/(self.thumbnailSize.height+kThumbnailSpacing)); // i = (c+s)/(w+s)
-            NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
+//            NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
             contentsHeight = self.visibleThumbnailsCount * self.thumbnailSize.height + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
         } else {
             self.visibleThumbnailsCount = totalItemsCount;
@@ -210,7 +209,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             
             CGRect contentViewFrame = self.contentView.frame;
             contentViewFrame.size.height = contentsHeight;
-            self.contentView.frame = contentViewFrame;
+            self.contentView.frame = CGRectMake(0, 0, self.thumbnailSize.width, contentsHeight);
         }
 
         // add thumbnail
@@ -235,6 +234,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             // set position
             imageViewFrame = imageView.frame;
             imageViewFrame.origin.y = i * (self.thumbnailSize.height + kThumbnailSpacing);
+            imageViewFrame.origin.x = 0;
             imageView.frame = imageViewFrame;
             
             [self.contentView addSubview:imageView];
@@ -255,7 +255,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
         CGFloat contentsWidth = totalItemsCount * self.thumbnailSize.width + (totalItemsCount-1) * kThumbnailSpacing; // cw = i*w + (i-1)*s
         if (contentsWidth > self.bounds.size.width) {
             self.visibleThumbnailsCount = floor((self.bounds.size.width+kThumbnailSpacing)/(self.thumbnailSize.width+kThumbnailSpacing)); // i = (c+s)/(w+s)
-            NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
+//            NSLog(@"items count: %d, new items count: %d, width: %.0f", totalItemsCount, self.visibleThumbnailsCount, self.bounds.size.width);
             contentsWidth = self.visibleThumbnailsCount * self.thumbnailSize.width + (self.visibleThumbnailsCount-1) * kThumbnailSpacing;
         } else {
             self.visibleThumbnailsCount = totalItemsCount;
@@ -287,7 +287,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             
             CGRect contentViewFrame = self.contentView.frame;
             contentViewFrame.size.width = contentsWidth;
-            self.contentView.frame = contentViewFrame;
+            self.contentView.frame = CGRectMake(0, 0, contentsWidth, self.thumbnailSize.height);
         }
         
         UIImageView *imageView = nil;
@@ -310,6 +310,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             
             imageViewFrame = imageView.frame;
             imageViewFrame.origin.x = i * (self.thumbnailSize.width + kThumbnailSpacing);
+            imageViewFrame.origin.y = 0;
             imageView.frame = imageViewFrame;
             
             [self.contentView addSubview:imageView];
@@ -389,6 +390,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
 
 - (void)_updateBigThumbnailPositionVerbose:(BOOL)verbose animated:(BOOL)animated
 {
+
     if (self.selectedIndex != NSNotFound && self.contentView.subviews.count > 0) {
         UIView *subview = nil;
         NSInteger tag = self.selectedIndex+kTagOffset;
@@ -417,13 +419,20 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             dispatch_release(imageLoadingQueue);
         };
 
-        if (animated)
-            [UIView animateWithDuration:0.2 animations:animations];
-        else
-            animations();
+        if (CGSizeEqualToSize(self.bigThumbnailSize, self.thumbnailSize))
+        {
+            self.bigThumbnailImageView.hidden = YES;
+        }else{
+            self.bigThumbnailImageView.hidden = NO;
+            if (animated)
+                [UIView animateWithDuration:0.2 animations:animations];
+            else
+                animations();
+            
+            self.bigThumbnailImageView.tag = tag-kTagOffset+kBigThumbnailTagOffset;
+            [self bringSubviewToFront:self.bigThumbnailImageView];
+        }
 
-        self.bigThumbnailImageView.tag = tag-kTagOffset+kBigThumbnailTagOffset;
-        [self bringSubviewToFront:self.bigThumbnailImageView];
         
         if (verbose && [self.delegate respondsToSelector:@selector(thumbnailPickerView:didSelectImageWithIndex:)])
             [self.delegate thumbnailPickerView:self didSelectImageWithIndex:self.selectedIndex];

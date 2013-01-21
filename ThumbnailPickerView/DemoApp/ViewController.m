@@ -51,20 +51,27 @@
 - (void)viewDidLoad
 {
     _numberOfItems = self.images.count;
-    
-    self.thumbnailPickerView.isVertical = YES;
-    CGRect frame;
-    if (self.thumbnailPickerView.isVertical)
-    {
-        frame = CGRectMake(320-60, 0, 60, 460);
-    }else
-    {
-        frame = CGRectMake(0, 400, 320, 60);
-    }
-
-    self.thumbnailPickerView.frame = frame;
     self.thumbnailPickerView.thumbnailSize = CGSizeMake(60,40);
+    self.thumbnailPickerView.bigThumbnailSize = CGSizeMake(72,48);
+//    self.thumbnailPickerView.bigThumbnailSize = self.thumbnailPickerView.thumbnailSize;
+    [self.thumbnailPickerView setSelectedIndex:1 animated:YES];
     self.infoLabel.text = [NSString string];
+    self.view.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
+}
+
+- (void)viewDidLayoutSubviews
+{
+
+    if (self.view.bounds.size.height<self.view.bounds.size.width) {
+        self.thumbnailPickerView.isVertical = NO;
+        self.thumbnailPickerView.frame = CGRectMake(0, 320-72, 480, 60);
+
+    }else{
+        self.thumbnailPickerView.isVertical = YES;
+        self.thumbnailPickerView.frame = CGRectMake(320-72, 0, 60, 460);
+    }
+    self.imageView.frame = self.view.bounds;
+    NSLog(@"bounds:%@",NSStringFromCGSize(self.view.bounds.size));
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
